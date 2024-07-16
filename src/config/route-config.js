@@ -16,6 +16,9 @@ import { action as manipulateAction }
   from '../components/EventForm';
 import WelcomePage from '../pages/WelcomePage';
 import SignUpPage from '../pages/SignUpPage';
+import { loginAction } from '../components/auth/LoginForm';
+import { authCheckLoader, userDataLoader } from './auth';
+import { logoutAction } from '../pages/Logout';
 
 
 // 라우터 설정
@@ -56,12 +59,17 @@ const eventsRouter = [
 const homeRouter = [
   {
     index: true,
-    element: <WelcomePage />
+    element: <WelcomePage />,
+    action: loginAction
   }, // 웰컴 페이지 (로그인화면 or 로그인완료화면)
   {
     path: 'sign-up',
     element: <SignUpPage />
-  } // 회원가입 페이지
+  }, // 회원가입 페이지
+  {
+    path: 'logout',
+    action: logoutAction
+  }
 ];
 
 export const router = createBrowserRouter([
@@ -69,6 +77,8 @@ export const router = createBrowserRouter([
     path: '/',
     element: <RootLayout />,
     errorElement: <ErrorPage />,
+    loader: userDataLoader,
+    id: 'user-data',
     children: [
       { 
         path: '/', 
@@ -78,6 +88,7 @@ export const router = createBrowserRouter([
       {
         path: 'events',
         element: <EventLayout />,
+        loader: authCheckLoader,
         children: eventsRouter
       },
     ]
