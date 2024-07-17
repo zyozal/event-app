@@ -1,13 +1,16 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import EventList from '../components/EventList';
 import EventSkeleton from '../components/EventSkeleton';
 import { EVENT_URL } from '../config/host-config';
 import { useRouteLoaderData } from 'react-router-dom';
+import EventContext from '../components/context/event-context';
 
 // npm install loadsh
 // import { debounce, throttle } from 'lodash';
 
 const Events = () => {
+
+  const { changeTotalEventCount } = useContext(EventContext);
 
   const { token } = useRouteLoaderData('user-data');
 
@@ -51,26 +54,36 @@ const Events = () => {
     });
     const { events: loadedEvents, totalCount } = await response.json();
 
+    // 전역 상태값 변경
+    changeTotalEventCount(totalCount);
+
     console.log('loaded: ', { loadedEvents, totalCount, len: loadedEvents.length });
 
     // console.log('loaded: ', loadedEvents);
 
     const updatedEvents = [...events, ...loadedEvents ];
-    setEvents(updatedEvents);
-    setLoading(false);
-    // 로딩이 끝나면 페이지번호를 1 늘려놓는다.
-    setCurrentPage(prevPage => prevPage + 1);
-    console.log('end loading!!');
 
-    // 로딩이 끝나면 더 이상 가져올게 있는지 여부를 체크한다.
-    setIsFinish(totalCount === updatedEvents.length);
 
-    // 로딩 후 지금까지 불러온 데이터 개수(현재 렌더링된 개수)를 총 데이터 개수에서 차감
-    const restEventsCount = totalCount - updatedEvents.length;
+    setTimeout(() => {
 
-    // skeleton 개수 구하기 -> 남은 개수가 4보다 크면 4로 세팅 4보다 작으면 그 수로 세팅
-    const skeletonCnt = Math.min(4, restEventsCount);
-    setSkeletonCount(skeletonCnt);
+      setLoading(false);
+      setEvents(updatedEvents);
+      // 로딩이 끝나면 페이지번호를 1 늘려놓는다.
+      setCurrentPage(prevPage => prevPage + 1);
+      console.log('end loading!!');
+  
+      // 로딩이 끝나면 더 이상 가져올게 있는지 여부를 체크한다.
+      setIsFinish(totalCount === updatedEvents.length);
+  
+      // 로딩 후 지금까지 불러온 데이터 개수(현재 렌더링된 개수)를 총 데이터 개수에서 차감
+      const restEventsCount = totalCount - updatedEvents.length;
+  
+      // skeleton 개수 구하기 -> 남은 개수가 4보다 크면 4로 세팅 4보다 작으면 그 수로 세팅
+      const skeletonCnt = Math.min(4, restEventsCount);
+      setSkeletonCount(skeletonCnt);
+    
+    }, 500);
+
 
   };
 
